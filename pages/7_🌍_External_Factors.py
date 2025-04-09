@@ -5,7 +5,7 @@ import warnings
 from datetime import datetime, timedelta
 warnings.filterwarnings("ignore")
 
-st.set_page_config(page_title="External Factors", page_icon="🔗", layout="wide")
+st.set_page_config(page_title="External Factors", page_icon="🌍", layout="wide")
 
 @st.cache_data(ttl=300)  # Cache for 300 seconds (5 minutes)
 def get_news_results(selected_player):

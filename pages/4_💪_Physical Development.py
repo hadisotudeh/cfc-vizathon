@@ -31,7 +31,7 @@ THRESHOLDS = [
 
 # Configuration
 warnings.filterwarnings("ignore")
-st.set_page_config(page_title="Physical Development", page_icon="🔋", layout="wide")
+st.set_page_config(page_title="Physical Development", page_icon="💪", layout="wide")
 
 
 def create_time_series_plot(df, movement_filter):

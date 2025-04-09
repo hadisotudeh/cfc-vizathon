@@ -17,6 +17,7 @@ from config import client, general_role, model
 import streamlit as st
 import requests
 from bs4 import BeautifulSoup
+from wikidata.client import Client
 
 DATA_DIR = Path("data")
 
@@ -856,7 +857,7 @@ def get_chelsea_players():
                     if player_link and "title" in player_link.attrs:
                         player_name = player_link["title"]
                         # Clean up the name by removing "(footballer)" if present
-                        player_name = player_name.replace(" (footballer)", "")
+                        player_name = player_name.split(" (")[0].strip()
                         players.append(player_name)
                         player2URL[player_name] =  f'https://en.wikipedia.org/wiki/{player_link["href"].split("/")[-1]}'
         return sorted(list(set(players))), player2URL  # Remove duplicates and sort
@@ -864,3 +865,89 @@ def get_chelsea_players():
     except requests.exceptions.RequestException as e:
         print(f"Error fetching data: {e}")
         return [],[]
+
+def get_wikidata_entity(wikipedia_title):
+    client = Client()
+    
+    # First search for the entity using the Wikipedia title
+    search_url = f"https://www.wikidata.org/w/api.php?action=wbsearchentities&search={wikipedia_title}&language=en&format=json"
+    
+    if wikipedia_title == "Reece_James_(footballer,_born_1999)":
+        return "Q39076401"
+    try:
+        response = requests.get(search_url)
+        data = response.json()
+        
+        # Check if we found matching entities
+        if data.get('search'):
+            # Get the first matching entity ID
+            entity_id = data['search'][0]['id']
+            entity = client.get(entity_id, load=True)
+            return entity.id
+        else:
+            print(f"No Wikidata entity found for '{wikipedia_title}'")
+            return None
+            
+    except Exception as e:
+        print(f"Error searching for entity: {e}")
+        return None
+
+def get_wikidata_metadata(wikidata_id):
+    # Define the properties we want to retrieve
+    properties = {
+        'country_of_citizenship': 'P27',          # Country of citizenship
+        'native_language': 'P103',                # Native language
+        'languages_spoken': 'P1412',              # Languages spoken, written or signed
+        'transfermarkt_id': 'P2446',              # Transfermarkt player ID
+        'fbref_id': 'P5750'                      # FBref player ID
+    }
+    
+    # Wikidata API endpoint
+    url = f"https://www.wikidata.org/wiki/Special:EntityData/{wikidata_id}.json"
+    
+    try:
+        response = requests.get(url)
+        response.raise_for_status()
+        data = response.json()
+        
+        entity = data.get('entities', {}).get(wikidata_id, {})
+        claims = entity.get('claims', {})
+        
+        result = {}
+        
+        # Helper function to extract values from claims
+        def get_property_values(prop_id):
+            if prop_id not in claims:
+                return None
+            values = []
+            for claim in claims[prop_id]:
+                if 'mainsnak' in claim and 'datavalue' in claim['mainsnak']:
+                    datavalue = claim['mainsnak']['datavalue']
+                    if datavalue['type'] == 'wikibase-entityid':
+                        # For entity IDs (like countries, languages), we need to look up the label
+                        entity_id = datavalue['value']['id']
+                        values.append(get_entity_label(entity_id))
+                    else:
+                        values.append(datavalue['value'])
+            return values[0] if len(values) == 1 else values
+        
+        # Helper function to get labels for entities
+        def get_entity_label(entity_id):
+            label_url = f"https://www.wikidata.org/wiki/Special:EntityData/{entity_id}.json"
+            label_response = requests.get(label_url)
+            label_data = label_response.json()
+            entity = label_data.get('entities', {}).get(entity_id, {})
+            return entity.get('labels', {}).get('en', {}).get('value', entity_id)
+        
+        # Get each property
+        result['country_of_citizenship'] = get_property_values(properties['country_of_citizenship'])
+        result['native_language'] = get_property_values(properties['native_language'])
+        result['languages_spoken'] = get_property_values(properties['languages_spoken'])
+        result['transfermarkt_id'] = get_property_values(properties['transfermarkt_id'])
+        result['fbref_id'] = get_property_values(properties['fbref_id'])
+        
+        return result
+    
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching data: {e}")
+        return None

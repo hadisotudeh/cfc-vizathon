@@ -25,7 +25,7 @@ import warnings
 # Configuration
 warnings.filterwarnings("ignore")
 
-st.set_page_config(page_title="GPS", page_icon="🛰️", layout="wide")
+st.set_page_config(page_title="GPS", page_icon="🏃‍♂️", layout="wide")
 
 # Data loading and preprocessing with optimizations
 

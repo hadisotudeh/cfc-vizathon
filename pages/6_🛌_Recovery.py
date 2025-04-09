@@ -15,7 +15,7 @@ from functools import lru_cache
 
 warnings.filterwarnings("ignore")
 
-st.set_page_config(page_title="Recovery Status", page_icon="💪", layout="wide")
+st.set_page_config(page_title="Recovery Status", page_icon="🛌", layout="wide")
 
 # Ensure the data is sorted by sessionDate
 recovery_status_df =load_recovery_data()
