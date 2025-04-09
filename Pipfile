@@ -1,0 +1,31 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+streamlit = "*"
+matplotlib = "*"
+numpy = "*"
+pandas = "*"
+seaborn = "*"
+scipy = "*"
+openpyxl = "*"
+streamlit-pdf-viewer = "*"
+plotly = "*"
+mistralai = "*"
+streamlit-aggrid = "*"
+millify = "*"
+beautifulsoup4 = "*"
+requests = "*"
+pillow = "*"
+wikipedia-api = "*"
+wikidata = "*"
+newsapi-python = "*"
+streamlit-extras = "*"
+
+[dev-packages]
+black = "*"
+
+[requires]
+python_version = "3.13"
