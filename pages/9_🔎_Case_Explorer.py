@@ -31,7 +31,6 @@ import warnings
 warnings.filterwarnings("ignore")
 
 st.set_page_config(page_title="Case Explorer", page_icon="🔎", layout="wide")
-adjust_sidebar_width()
 
 player_id = st.sidebar.selectbox("Player", ["P1"])
 data_type = st.sidebar.selectbox("Source", ["GPS", "Capability", "Recovery"])

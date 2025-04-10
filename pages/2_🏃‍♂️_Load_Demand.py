@@ -27,7 +27,6 @@ import warnings
 warnings.filterwarnings("ignore")
 
 st.set_page_config(page_title="GPS", page_icon="🏃‍♂️", layout="wide")
-adjust_sidebar_width()
 
 # Data loading and preprocessing with optimizations
 

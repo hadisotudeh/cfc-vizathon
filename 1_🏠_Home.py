@@ -1,21 +1,20 @@
 import streamlit as st
 from PIL import Image
-
-from utils import adjust_sidebar_width
+from streamlit.components.v1 import html
+import time
 
 # Set page configuration
 st.set_page_config(
-    page_title="CFC Performance Dashboard",
+    page_title="Performance Dashboard",
     page_icon="static/logo.png",
     layout="wide",
-    initial_sidebar_state="collapsed"
+    initial_sidebar_state="collapsed",
 )
-adjust_sidebar_width()
 
 # Display banner with logo and title
-_,col1, col2,_ = st.columns([1.5,3,1,1.5])
+_,col1, col2,_ = st.columns([0.5,4,0.5,0.5])
 with col1:
-    st.title("Welcome to the CFC Performance Dashboard")
+    st.title("Welcome to the Performance Dashboard")
 with col2:
     image = Image.open("static/logo.jpg")
     st.image(image, width=100)

@@ -704,6 +704,12 @@ def get_ai_analysis(df_json, mode, threshold_date=None, category=None):
 
             Your analysis given data, use clinical thresholds to prioritize actionable interventions, and flag any contradictory signals between metrics
             """}
+    elif mode == "injury":
+        content = f"""
+        This is an injury history dataset of the given player
+        ```json
+        {df_json}"""
+
     messages = [general_role]
 
     if extra_role:
@@ -874,6 +880,8 @@ def get_wikidata_entity(wikipedia_title):
     
     if wikipedia_title == "Reece_James_(footballer,_born_1999)":
         return "Q39076401"
+    elif wikipedia_title == "Wesley_Fofana_(footballer)":
+        return "Q65029821"
     try:
         response = requests.get(search_url)
         data = response.json()

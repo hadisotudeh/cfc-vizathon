@@ -11,7 +11,6 @@ from utils import Color, DATA_DIR, return_json_cell, upper_color, lower_color, a
 warnings.filterwarnings("ignore")
 
 st.set_page_config(page_title="Individual Priority", page_icon="📋", layout="wide")
-adjust_sidebar_width()
 
 # Initialize session state for data persistence
 if "individual_priority_df" not in st.session_state:

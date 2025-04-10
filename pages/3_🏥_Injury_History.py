@@ -4,12 +4,29 @@ import pandas as pd
 import streamlit as st
 from datetime import datetime
 import warnings
-from utils import get_chelsea_players, get_wikidata_metadata, get_wikidata_entity, adjust_sidebar_width
+from utils import get_chelsea_players, get_wikidata_metadata, get_wikidata_entity, get_ai_analysis
 
 # Configuration
 warnings.filterwarnings("ignore")
 st.set_page_config(page_title="Injury History", page_icon="🏥", layout="wide")
-adjust_sidebar_width()
+
+# Increase font sizes globally for dataframe
+st.markdown("""
+    <style>
+    .stDataFrame tbody td {
+        font-size: 30px !important;
+    }
+    .stDataFrame thead th {
+        font-size: 30px !important;
+    }
+    .stDataFrame thead tr th:first-child {
+        font-size: 30px !important;
+    }
+    .stDataFrame tbody tr th {
+        font-size: 30px !important;
+    }
+    </style>
+""", unsafe_allow_html=True)
 
 # Set headers to mimic a browser visit
 HEADERS = {
@@ -83,39 +100,50 @@ def process_injuries(injuries):
     return injury_dfs
 
 def display_injury_tables(injury_dfs, player_name=""):
-    """Display injury DataFrames in Streamlit in a 3-column grid"""
+    """Display injury DataFrames in Streamlit in a 3-column grid with colored rows by severity"""
     if not injury_dfs:
         st.warning("No injury data available for this player.")
         return
-    
-    # Convert the dictionary to a list of tuples (injury_type, df)
+
     injury_items = list(injury_dfs.items())
-    
-    # Calculate how many rows we need (2 tables per row)
-    num_rows = (len(injury_items) + 2) // 2  # Round up division
-    
+    num_rows = (len(injury_items) + 1) // 2
+
     for row in range(num_rows):
-        # Create columns for this row
         cols = st.columns(2)
-        
-        # Get up to 2 injuries for this row
         start_idx = row * 2
         end_idx = start_idx + 2
         current_injuries = injury_items[start_idx:end_idx]
-        
-        # Display each injury in its own column
+
         for col_idx, (injury_type, df) in enumerate(current_injuries):
             with cols[col_idx]:
                 st.subheader(injury_type.title())
-                
-                # Format the DataFrame for display
+
                 display_df = df.drop(columns=['injury']).reset_index(drop=True)
-                display_df.index = display_df.index + 1  # Start index at 1
-                
-                display_df.rename(columns={"season":"Season", "days":"Days", "games_missed":"Missed"},inplace=True)
+                display_df.index = display_df.index + 1
+                display_df.rename(columns={
+                    "season": "Season",
+                    "days": "Days",
+                    "games_missed": "Missed"
+                }, inplace=True)
+
+                display_df['Days'] = display_df['Days'].apply(lambda x: x.split(" ")[0])
+                display_df['Days'] = pd.to_numeric(display_df['Days'], errors='coerce')
+
+                def highlight_severity(row):
+                    if pd.isna(row['Days']):
+                        return [''] * len(row)
+                    if row['Days'] > 30:
+                        color = '#E2AEAB'  # dark red
+                    elif row['Days'] > 7:
+                        color = '#F1D7D5'  # light red
+                    else:
+                        color = ''  # no color
+                    return [f'background-color: {color}' if color else '' for _ in row]
+
+                styled_df = display_df.style.apply(highlight_severity, axis=1)
 
                 st.dataframe(
-                    display_df,
+                    styled_df,
                     column_config={
                         'from_date': st.column_config.DateColumn("From", format="MMM D, YYYY"),
                         'until_date': st.column_config.DateColumn("Until", format="MMM D, YYYY")
@@ -142,3 +170,9 @@ if injuries:
     display_injury_tables(injury_dfs, selected_player)
 else:
     st.warning(f"No injury data found for {selected_player}")
+
+st.subheader(f"AI Sports Scientist's Opinion: 💻")
+
+df_json = pd.DataFrame(injuries).to_json(orient="records")
+
+st.write(get_ai_analysis(df_json, mode="recovery"))

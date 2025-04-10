@@ -23,6 +23,11 @@ wikipedia-api = "*"
 wikidata = "*"
 newsapi-python = "*"
 streamlit-extras = "*"
+nltk = "*"
+wordcloud = "*"
+newspaper3k = "*"
+lxml = {extras = ["html_clean"], version = "*"}
+textblob = "*"
 
 [dev-packages]
 black = "*"

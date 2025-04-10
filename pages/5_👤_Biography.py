@@ -185,7 +185,6 @@ def display_sections(sections, level=0):
             display_sections(section.sections, level + 1)
 
 st.set_page_config(page_title="Player Bio", page_icon="👤", layout="wide")
-adjust_sidebar_width()
 
 with st.sidebar:
     st.header("🎯 Select a Player")
