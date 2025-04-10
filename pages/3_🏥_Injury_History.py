@@ -4,11 +4,12 @@ import pandas as pd
 import streamlit as st
 from datetime import datetime
 import warnings
-from utils import get_chelsea_players, get_wikidata_metadata, get_wikidata_entity
+from utils import get_chelsea_players, get_wikidata_metadata, get_wikidata_entity, adjust_sidebar_width
 
 # Configuration
 warnings.filterwarnings("ignore")
 st.set_page_config(page_title="Injury History", page_icon="🏥", layout="wide")
+adjust_sidebar_width()
 
 # Set headers to mimic a browser visit
 HEADERS = {

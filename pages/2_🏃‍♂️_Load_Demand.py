@@ -17,6 +17,7 @@ from utils import (
     feature_names,
     get_ai_analysis,
     load_gps_data,
+    adjust_sidebar_width,
 )
 from config import client, general_role, model
 from millify import millify
@@ -26,6 +27,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 st.set_page_config(page_title="GPS", page_icon="🏃‍♂️", layout="wide")
+adjust_sidebar_width()
 
 # Data loading and preprocessing with optimizations
 

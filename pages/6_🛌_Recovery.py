@@ -2,7 +2,7 @@ from pathlib import Path
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
-from utils import Color, DATA_DIR, get_ai_analysis, load_recovery_data
+from utils import Color, DATA_DIR, get_ai_analysis, load_recovery_data,adjust_sidebar_width
 import seaborn as sns
 import matplotlib.dates as mdates
 from st_aggrid import AgGrid, GridOptionsBuilder
@@ -15,7 +15,9 @@ from functools import lru_cache
 
 warnings.filterwarnings("ignore")
 
+
 st.set_page_config(page_title="Recovery Status", page_icon="🛌", layout="wide")
+adjust_sidebar_width()
 
 # Ensure the data is sorted by sessionDate
 recovery_status_df =load_recovery_data()

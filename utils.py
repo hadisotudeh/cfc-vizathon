@@ -951,3 +951,13 @@ def get_wikidata_metadata(wikidata_id):
     except requests.exceptions.RequestException as e:
         print(f"Error fetching data: {e}")
         return None
+
+def adjust_sidebar_width():
+    st.markdown("""
+        <style>
+            [data-testid="stSidebar"] {
+                min-width: 0px !important;
+                max-width: 0px !important;
+            }
+        </style>
+    """, unsafe_allow_html=True)

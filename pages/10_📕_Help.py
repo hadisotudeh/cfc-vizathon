@@ -3,10 +3,12 @@ from streamlit_pdf_viewer import pdf_viewer
 import streamlit as st
 from PIL import Image
 import warnings
+from utils import adjust_sidebar_width
 
 # Configuration
 warnings.filterwarnings("ignore")
 st.set_page_config(page_title="Help", page_icon="📕", layout="wide")
+adjust_sidebar_width()
 
 st.header("Help Page:")
 

@@ -5,7 +5,8 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from collections import OrderedDict
-from utils import get_chelsea_players, get_wikidata_metadata, get_wikidata_entity
+from utils import get_chelsea_players, get_wikidata_metadata, get_wikidata_entity,adjust_sidebar_width
+
 
 @st.cache_data
 def get_biography_and_image(player_name, player2URL):
@@ -184,6 +185,7 @@ def display_sections(sections, level=0):
             display_sections(section.sections, level + 1)
 
 st.set_page_config(page_title="Player Bio", page_icon="👤", layout="wide")
+adjust_sidebar_width()
 
 with st.sidebar:
     st.header("🎯 Select a Player")

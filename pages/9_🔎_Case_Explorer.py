@@ -19,16 +19,19 @@ from utils import (
     load_gps_data,
     load_capability_data,
     load_recovery_data,
+    adjust_sidebar_width,
 )
 from st_aggrid import AgGrid, GridOptionsBuilder, StAggridTheme
 from config import client, general_role, model
 from millify import millify
 import warnings
 
+
 # Configuration
 warnings.filterwarnings("ignore")
 
 st.set_page_config(page_title="Case Explorer", page_icon="🔎", layout="wide")
+adjust_sidebar_width()
 
 player_id = st.sidebar.selectbox("Player", ["P1"])
 data_type = st.sidebar.selectbox("Source", ["GPS", "Capability", "Recovery"])

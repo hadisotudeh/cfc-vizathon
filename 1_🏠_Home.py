@@ -1,6 +1,8 @@
 import streamlit as st
 from PIL import Image
 
+from utils import adjust_sidebar_width
+
 # Set page configuration
 st.set_page_config(
     page_title="CFC Performance Dashboard",
@@ -8,14 +10,15 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="collapsed"
 )
+adjust_sidebar_width()
 
 # Display banner with logo and title
-_,col1, col2,_ = st.columns([0.25,0.5,4,0.25])
+_,col1, col2,_ = st.columns([1.5,3,1,1.5])
 with col1:
-    image = Image.open("static/logo.png")
-    st.image(image, width=100)
-with col2:
     st.title("Welcome to the CFC Performance Dashboard")
+with col2:
+    image = Image.open("static/logo.jpg")
+    st.image(image, width=100)
 # Custom card function with D3DEEF background
 def create_card(icon, title, content, page):
     with st.container(border=False):
