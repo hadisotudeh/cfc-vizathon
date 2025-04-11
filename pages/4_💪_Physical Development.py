@@ -4,7 +4,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-from utils import DATA_DIR, return_json_cell, upper_color, lower_color, get_ai_analysis, load_capability_data,adjust_sidebar_width
+from utils import DATA_DIR, return_json_cell, upper_color, lower_color, get_ai_analysis, load_capability_data
 import warnings
 from datetime import datetime, timedelta
 
@@ -32,7 +32,6 @@ THRESHOLDS = [
 # Configuration
 warnings.filterwarnings("ignore")
 st.set_page_config(page_title="Physical Development", page_icon="💪", layout="wide")
-adjust_sidebar_width()
 
 
 def create_time_series_plot(df, movement_filter):

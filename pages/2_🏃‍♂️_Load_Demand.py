@@ -17,7 +17,6 @@ from utils import (
     feature_names,
     get_ai_analysis,
     load_gps_data,
-    adjust_sidebar_width,
 )
 from config import client, general_role, model
 from millify import millify

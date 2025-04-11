@@ -5,8 +5,7 @@ import datetime
 import plotly.express as px
 from st_aggrid import AgGrid, GridOptionsBuilder
 import warnings
-from utils import Color, DATA_DIR, return_json_cell, upper_color, lower_color, adjust_sidebar_width
-
+from utils import Color, DATA_DIR, return_json_cell, upper_color, lower_color
 
 warnings.filterwarnings("ignore")
 

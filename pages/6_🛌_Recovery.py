@@ -17,7 +17,6 @@ warnings.filterwarnings("ignore")
 
 
 st.set_page_config(page_title="Recovery Status", page_icon="🛌", layout="wide")
-adjust_sidebar_width()
 
 # Ensure the data is sorted by sessionDate
 recovery_status_df =load_recovery_data()

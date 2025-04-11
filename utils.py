@@ -664,7 +664,7 @@ def return_json_cell(
 
 
 @lru_cache(maxsize=100)  # Cache up to 100 unique requests
-def get_ai_analysis(df_json, mode, threshold_date=None, category=None):
+def get_ai_analysis(df_json, mode, threshold_date=None, category=None, selected_player=None, news=None):
     """Get AI analysis for the filtered data."""
     extra_role = {}
     if mode == "gps":
@@ -710,7 +710,11 @@ def get_ai_analysis(df_json, mode, threshold_date=None, category=None):
         ```json
         {df_json}"""
 
-    messages = [general_role]
+    if mode == "external_factors":
+        messages = []
+        content = f"What do you see about {selected_player} in the given news content: {news}. Write a cohesive and coencise summary using bullet points."
+    else:
+        messages = [general_role]
 
     if extra_role:
         messages.append(extra_role)

@@ -5,7 +5,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 from collections import OrderedDict
-from utils import get_chelsea_players, get_wikidata_metadata, get_wikidata_entity,adjust_sidebar_width
+from utils import get_chelsea_players, get_wikidata_metadata, get_wikidata_entity
 
 
 @st.cache_data

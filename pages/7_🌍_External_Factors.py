@@ -1,6 +1,6 @@
 import streamlit as st
 from config import newsapi
-from utils import get_chelsea_players
+from utils import get_chelsea_players, get_ai_analysis
 import warnings
 from datetime import datetime, timedelta
 from newspaper import Article
@@ -92,7 +92,7 @@ def generate_wordcloud(text):
 with st.sidebar:
     st.header("🎯 Select a Player")
     players, _ = get_chelsea_players()
-    selected_player = st.selectbox("Choose a Chelsea player:", players, index=players.index("Cole Palmer"))
+    selected_player = st.selectbox("Choose a Chelsea player:", players, index=players.index("Christopher Nkunku"))
 
 results = get_news_results(selected_player)
 
@@ -108,6 +108,10 @@ all_text = re.sub(r'\b(chars?|encoding|xml|html)\b', '', all_text, flags=re.IGNO
 all_text = re.sub(r'[^\w\s-]', ' ', all_text) 
 
 generate_wordcloud(all_text)
+
+st.subheader("AI Sports Journalist's Findings: 💻")
+
+st.write(get_ai_analysis(df_json=None, mode="external_factors", selected_player=selected_player, news=all_text))
 
 st.subheader("📰 Article List: Color-coded by Sentiment Analysis")
 
