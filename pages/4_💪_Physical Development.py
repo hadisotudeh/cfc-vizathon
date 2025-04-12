@@ -80,7 +80,9 @@ def create_time_series_plot(df, movement_filter):
 
     # Update layout with right-side legend
     fig.update_layout(
-        title=f"{movement_filter.title()} Performance Over Time",
+        title=f"{movement_filter.title()} Performance Over Time <br>"
+          "<span style='color:#E0E3D0; text-shadow: -0.8px 0 #000, 0 0.8px #000, 0.8px 0 #000, 0 -0.8px #000;'>■</span> Top 25%   "
+          "<span style='color:#F1D7D5; text-shadow: -0.8px 0 #000, 0 0.8px #000, 0.8px 0 #000, 0 -0.8px #000;'>■</span> Bottom 25%",
         yaxis_title="Benchmark Percentile (%)",
         yaxis_range=[0, 100],
         hovermode="x unified",

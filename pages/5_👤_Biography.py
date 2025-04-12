@@ -7,8 +7,7 @@ import re
 from collections import OrderedDict
 from utils import get_chelsea_players, get_wikidata_metadata, get_wikidata_entity
 
-
-@st.cache_data
+@st.cache_data(ttl=300)
 def get_biography_and_image(player_name, player2URL):
     """Scrapes detailed player information from Wikipedia."""
     url = player2URL[player_name]
@@ -40,7 +39,7 @@ def get_biography_and_image(player_name, player2URL):
         st.error(f"Error fetching data: {e}")
         return None
 
-@st.cache_data
+@st.cache_data(ttl=300)
 def get_career_sections(player_name, player2URL):
     """Extracts career sections from Wikipedia with Cole Palmer's page structure in mind."""
     try:
@@ -201,12 +200,47 @@ if selected_player:
     wikidata_id = get_wikidata_entity(wikipedia_title)
     wikidata_dict = get_wikidata_metadata(wikidata_id)
 
-    col1, col2 = st.columns([1, 3])
+    col1, col2, col3 = st.columns([1, 2, 1.8])
     with col1:
         if photo_section:
             st.image(photo_section, width=180)
         else:
             st.warning("No image available.")
+    with col3:
+        # Create Wikipedia-style layout
+        st.markdown("""
+        <style>
+        .info-title {
+            background-color: #D3DEEF;
+            text-align: center;
+            font-weight: bold;
+            padding: 5px;
+        }
+        .info-row {
+            display: flex;
+            margin-bottom: 5px;
+        }
+        .info-label {
+            font-weight: bold;
+            min-width: 120px;
+        }
+        .section-title {
+            border-bottom: 1px solid #a2a9b1;
+            font-size: 18px;
+            font-weight: bold;
+            margin: 15px 0 10px 0;
+        }
+        </style>
+        """, unsafe_allow_html=True)
+        
+        # Personal Information Section
+        st.markdown('<div class="info-box"><div class="info-title">Playing Career</div>', unsafe_allow_html=True)
+        for row in wikidata_dict["sports_teams_played_for"]:        
+            st.markdown(f"""
+            <div class="info-row">
+                <div>{row.replace("?","now").replace("national","").replace(".","").replace("under-","U").replace("association football team","national team").replace("-"," - ")}</div>
+            </div>
+            """, unsafe_allow_html=True)
     with col2:
         # Remove None values and empty keys
         clean_data = {k: v for k, v in player_data.items() if v is not None and k != ''}

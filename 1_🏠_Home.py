@@ -6,7 +6,7 @@ import time
 # Set page configuration
 st.set_page_config(
     page_title="Performance Dashboard",
-    page_icon="static/logo.png",
+    page_icon="static/logo.jpg",
     layout="wide",
     initial_sidebar_state="collapsed",
 )
@@ -50,7 +50,7 @@ with col1:
                "Biography")
     st.write("")
     create_card("📋", "Individual Priority", 
-               "Individual priority areas are identified and reviewed by the player and Performance Support Team.",
+               "Individual priority areas are identified and reviewed by the player and the support team.",
                "Individual_Priority")
 
 
@@ -65,9 +65,8 @@ with col2:
                "Recovery")
     st.write("")
     create_card("🔎", "Case Explorer", 
-               "Case Explorer",
-               "Case_Explorer")
-
+                "Player data case exploration from multiple sources with filtering and color-coded visualization.",
+                "Case_Explorer")
 
 # Third column cards
 with col3:
@@ -80,7 +79,7 @@ with col3:
                "External_Factors")
     st.write("")
     create_card("📕", "Help", 
-               "Help",
+               "Platform features, navigation, and data documentation.",
                "Help")
 
 # Add footer

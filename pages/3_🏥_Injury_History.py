@@ -164,7 +164,14 @@ player_id = wikidata_dict['transfermarkt_id']
 
 with st.spinner(f"Fetching {selected_player}'s injury history"):
     injuries, url = get_injury_history(player_id)
-st.write(f"Live from [Transfermarkt]({url})")
+st.markdown(
+    f"Live from [Transfermarkt]({url}): "
+    "severe injuries (>30 days) in "
+    f"<span style='display: inline-block; width: 12px; height: 12px; background-color: #E2AEAB; margin-right: 4px; vertical-align: middle;'></span>"
+    "and moderate injuries (>7 days) in "
+    f"<span style='display: inline-block; width: 12px; height: 12px; background-color: #F1D7D5; margin-right: 4px; vertical-align: middle;'></span>",
+    unsafe_allow_html=True
+)
 if injuries:
     injury_dfs = process_injuries(injuries)
     display_injury_tables(injury_dfs, selected_player)

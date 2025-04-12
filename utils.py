@@ -818,7 +818,7 @@ def load_capability_data():
     df = df.rename(columns=COLUMN_RENAMES)
     df[DATE_COL] = pd.to_datetime(df[DATE_COL], dayfirst=True, cache=True)
     df = df.sort_values(DATE_COL)
-    df[BENCHMARK_COL] = df[BENCHMARK_COL].mul(100)
+    df[BENCHMARK_COL] = df[BENCHMARK_COL].mul(100).clip(lower=0)
     df["player_id"] = "P1"
     df["class"] = (
         df[QUALITY_COL].str.title().str.replace("_", "-")
@@ -907,56 +907,93 @@ def get_wikidata_entity(wikipedia_title):
 def get_wikidata_metadata(wikidata_id):
     # Define the properties we want to retrieve
     properties = {
-        'country_of_citizenship': 'P27',          # Country of citizenship
-        'native_language': 'P103',                # Native language
-        'languages_spoken': 'P1412',              # Languages spoken, written or signed
-        'transfermarkt_id': 'P2446',              # Transfermarkt player ID
-        'fbref_id': 'P5750'                      # FBref player ID
+        'country_of_citizenship': 'P27',
+        'native_language': 'P103',
+        'languages_spoken': 'P1412',
+        'transfermarkt_id': 'P2446',
+        'youth_clubs': 'P2031',
+        'sports_teams_played_for': 'P54',
     }
     
-    # Wikidata API endpoint
     url = f"https://www.wikidata.org/wiki/Special:EntityData/{wikidata_id}.json"
     
     try:
         response = requests.get(url)
         response.raise_for_status()
         data = response.json()
-        
         entity = data.get('entities', {}).get(wikidata_id, {})
         claims = entity.get('claims', {})
-        
         result = {}
         
-        # Helper function to extract values from claims
+        def get_entity_label(entity_id):
+            try:
+                label_url = f"https://www.wikidata.org/wiki/Special:EntityData/{entity_id}.json"
+                label_response = requests.get(label_url)
+                label_data = label_response.json()
+                entity = label_data.get('entities', {}).get(entity_id, {})
+                return entity.get('labels', {}).get('en', {}).get('value', entity_id)
+            except:
+                return entity_id
+        
         def get_property_values(prop_id):
             if prop_id not in claims:
                 return None
+            
             values = []
             for claim in claims[prop_id]:
-                if 'mainsnak' in claim and 'datavalue' in claim['mainsnak']:
+                try:
+                    # Skip if no mainsnak or datavalue
+                    if 'mainsnak' not in claim or 'datavalue' not in claim['mainsnak']:
+                        continue
+                        
                     datavalue = claim['mainsnak']['datavalue']
+                    value = None
+                    
                     if datavalue['type'] == 'wikibase-entityid':
-                        # For entity IDs (like countries, languages), we need to look up the label
                         entity_id = datavalue['value']['id']
-                        values.append(get_entity_label(entity_id))
+                        value = get_entity_label(entity_id)
                     else:
-                        values.append(datavalue['value'])
+                        value = str(datavalue['value'])
+                    
+                    # Handle dates if this is a sports team property
+                    if prop_id == 'P54':
+                        years = {'start': '?', 'end': '?'}
+                        
+                        if 'qualifiers' in claim:
+                            qualifiers = claim['qualifiers']
+                            
+                            # Start time (P580)
+                            if 'P580' in qualifiers:
+                                try:
+                                    start_claim = qualifiers['P580'][0]
+                                    if 'datavalue' in start_claim:
+                                        start_time = start_claim['datavalue']['value']['time']
+                                        years['start'] = start_time[1:5]  # Extract YYYY from +YYYY-MM-DD
+                                except (KeyError, IndexError):
+                                    pass
+                            
+                            # End time (P582)
+                            if 'P582' in qualifiers:
+                                try:
+                                    end_claim = qualifiers['P582'][0]
+                                    if 'datavalue' in end_claim:
+                                        end_time = end_claim['datavalue']['value']['time']
+                                        years['end'] = end_time[1:5]
+                                except (KeyError, IndexError):
+                                    pass
+                        
+                        value = f"{value} ({years['start']}-{years['end']})"
+                    
+                    values.append(value)
+                
+                except Exception as e:
+                    print(f"Error processing claim: {e}")
+                    continue
+            
             return values[0] if len(values) == 1 else values
         
-        # Helper function to get labels for entities
-        def get_entity_label(entity_id):
-            label_url = f"https://www.wikidata.org/wiki/Special:EntityData/{entity_id}.json"
-            label_response = requests.get(label_url)
-            label_data = label_response.json()
-            entity = label_data.get('entities', {}).get(entity_id, {})
-            return entity.get('labels', {}).get('en', {}).get('value', entity_id)
-        
-        # Get each property
-        result['country_of_citizenship'] = get_property_values(properties['country_of_citizenship'])
-        result['native_language'] = get_property_values(properties['native_language'])
-        result['languages_spoken'] = get_property_values(properties['languages_spoken'])
-        result['transfermarkt_id'] = get_property_values(properties['transfermarkt_id'])
-        result['fbref_id'] = get_property_values(properties['fbref_id'])
+        for key, prop_id in properties.items():
+            result[key] = get_property_values(prop_id)
         
         return result
     

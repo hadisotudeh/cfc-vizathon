@@ -10,6 +10,8 @@ from wordcloud import WordCloud
 import matplotlib.pyplot as plt
 import re
 from nltk.corpus import stopwords
+from collections import defaultdict
+import numpy as np
 
 # Download NLTK data
 nltk.download('stopwords')
@@ -69,25 +71,43 @@ def get_sentiment_badge(sentiment, score):
     }.get(sentiment, "⚪")
     return f"{color}"
 
-def generate_wordcloud(text): 
-    st.subheader(f"🔠 Larger words appear more often in the news coverage")
-    stop_words = set(stopwords.words('english'))
+def generate_wordcloud(text):
+    st.subheader("🔠 Larger words appear more often in the news coverage")
+    
+    # Enhanced stopwords set
+    base_stopwords = set(stopwords.words('english'))
+    custom_stopwords = {
+        'getting', 'many', 'one', 'two', 'three', 'four', 'five', 'six',
+        'seven', 'eight', 'nine', 'ten', 'also', 'us', 'would', 'could',
+        'said', 'says', 'say', 'like', 'even', 'still', 'yet', 'may',
+        'might', 'often', 'every', 'however', 'since', 'without', 'within',
+        'made', 'held', 'next', 'take', 'getty'
+    }
+    stop_words = base_stopwords.union(custom_stopwords)
+
     wordcloud = WordCloud(
-        width=1600,  # Double the original width for higher resolution
-        height=800,   # Double the original height
+        width=1600,
+        height=800,
         background_color='white',
         stopwords=stop_words,
-        scale=2  # This scales the image internally for better quality
+        scale=2,
+        collocations=False,
+        colormap='tab10',
+        max_words=70,
+        margin=20,
+        prefer_horizontal=0.85,
+        min_word_length=4,
+        relative_scaling=0.5,
+        regexp=r'\w{4,}',
+        repeat=False  # Important to prevent color reuse
     ).generate(text)
 
-    # Create figure with higher DPI
-    dpi = 500
-    plt.figure(figsize=(8, 4), dpi=dpi)  # 500 DPI for high quality
+    # High quality display
+    plt.figure(figsize=(12, 6), dpi=300)
     plt.imshow(wordcloud, interpolation='bilinear')
     plt.axis('off')
-
-    # Use st.pyplot with clear_figure=True to prevent duplicate displays
-    st.pyplot(plt, dpi=dpi, clear_figure=True)
+    plt.tight_layout(pad=0)
+    st.pyplot(plt, clear_figure=True)
 
 with st.sidebar:
     st.header("🎯 Select a Player")
@@ -96,7 +116,7 @@ with st.sidebar:
 
 results = get_news_results(selected_player)
 
-st.header(f"{selected_player}: Latest News & Updates (Past 7 Days)")
+st.header(f"{selected_player}: Latest News (Past 7 Days)")
 n_articles = results["totalResults"]
 st.markdown(f"Found {n_articles} articles - Live news data from [NewsAPI](https://newsapi.org)")
 
