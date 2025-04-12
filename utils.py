@@ -994,7 +994,9 @@ def get_wikidata_metadata(wikidata_id):
         
         for key, prop_id in properties.items():
             result[key] = get_property_values(prop_id)
-        
+            if key == "sports_teams_played_for":
+                if isinstance(result[key], str):
+                    result[key] = [result[key]]        
         return result
     
     except requests.exceptions.RequestException as e:

@@ -72,7 +72,7 @@ else:
     )
 
 
-st.subheader(f"{category} composite score Days:")
+st.subheader(f"{category.title()} composite score Days:")
 kpi_1, kpi_2, kpi_3 = st.columns(3)
 
 if category != "total":

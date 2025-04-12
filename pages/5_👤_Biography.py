@@ -207,40 +207,41 @@ if selected_player:
         else:
             st.warning("No image available.")
     with col3:
-        # Create Wikipedia-style layout
-        st.markdown("""
-        <style>
-        .info-title {
-            background-color: #D3DEEF;
-            text-align: center;
-            font-weight: bold;
-            padding: 5px;
-        }
-        .info-row {
-            display: flex;
-            margin-bottom: 5px;
-        }
-        .info-label {
-            font-weight: bold;
-            min-width: 120px;
-        }
-        .section-title {
-            border-bottom: 1px solid #a2a9b1;
-            font-size: 18px;
-            font-weight: bold;
-            margin: 15px 0 10px 0;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-        
-        # Personal Information Section
-        st.markdown('<div class="info-box"><div class="info-title">Playing Career</div>', unsafe_allow_html=True)
-        for row in wikidata_dict["sports_teams_played_for"]:        
-            st.markdown(f"""
-            <div class="info-row">
-                <div>{row.replace("?","now").replace("national","").replace(".","").replace("under-","U").replace("association football team","national team").replace("-"," - ")}</div>
-            </div>
+        if wikidata_dict["sports_teams_played_for"]:
+            # Create Wikipedia-style layout
+            st.markdown("""
+            <style>
+            .info-title {
+                background-color: #D3DEEF;
+                text-align: center;
+                font-weight: bold;
+                padding: 5px;
+            }
+            .info-row {
+                display: flex;
+                margin-bottom: 5px;
+            }
+            .info-label {
+                font-weight: bold;
+                min-width: 120px;
+            }
+            .section-title {
+                border-bottom: 1px solid #a2a9b1;
+                font-size: 18px;
+                font-weight: bold;
+                margin: 15px 0 10px 0;
+            }
+            </style>
             """, unsafe_allow_html=True)
+            
+            # Personal Information Section
+            st.markdown('<div class="info-box"><div class="info-title">Playing Career</div>', unsafe_allow_html=True)
+            for row in wikidata_dict["sports_teams_played_for"]:        
+                st.markdown(f"""
+                <div class="info-row">
+                    <div>{row.replace("?","now").replace("national","").replace(".","").replace("under-","U").replace("association football team","national team").replace("-"," - ")}</div>
+                </div>
+                """, unsafe_allow_html=True)
     with col2:
         # Remove None values and empty keys
         clean_data = {k: v for k, v in player_data.items() if v is not None and k != ''}
@@ -298,11 +299,14 @@ if selected_player:
             if isinstance(wikidata_dict[key], str):
                 wikidata_dict[key] = [wikidata_dict[key]]
 
-        langs = list(OrderedDict.fromkeys(wikidata_dict["native_language"] + wikidata_dict["languages_spoken"]))
-        if len(langs) > 1:
-            wikidata_dict["native_language"] = ", ".join(langs)
-        else:
-            wikidata_dict["native_language"] = langs[0]
+        try:
+            langs = list(OrderedDict.fromkeys(wikidata_dict["native_language"] + wikidata_dict["languages_spoken"]))
+            if len(langs) > 1:
+                wikidata_dict["native_language"] = ", ".join(langs)
+            else:
+                wikidata_dict["native_language"] = langs[0]
+        except:
+            langs = []
 
         wikidata_mapping = {"country_of_citizenship": "Country", 'native_language': "Language"}
         for field in related_wikidata_field:
