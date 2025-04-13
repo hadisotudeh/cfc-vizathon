@@ -37,38 +37,33 @@ HEADERS = {
 def get_injury_history(player_id):
     url = f"https://www.transfermarkt.com/player/verletzungen/spieler/{player_id}"
     
-    try:
-        response = requests.get(url, headers=HEADERS)
-        response.raise_for_status()
-        soup = BeautifulSoup(response.content, 'html.parser')
-        
-        # Find the injuries table
-        table = soup.find('table', {'class': 'items'})
-        if not table:
-            return None
-            
-        # Extract rows
-        rows = table.find_all('tr')[1:]  # skip header row
-        injuries = []
-        
-        for row in rows:
-            cols = row.find_all('td')
-            if len(cols) >= 5:
-                injury = {
-                    'season': cols[0].get_text(strip=True),
-                    'injury': cols[1].get_text(strip=True),
-                    'from_date': cols[2].get_text(strip=True),
-                    'until_date': cols[3].get_text(strip=True),
-                    'days': cols[4].get_text(strip=True),
-                    'games_missed': cols[5].get_text(strip=True) if len(cols) > 5 else 'N/A'
-                }
-                injuries.append(injury)
-                
-        return injuries, url
-        
-    except Exception as e:
-        st.error(f"Error fetching data for player ID {player_id}: {str(e)}")
+    response = requests.get(url, headers=HEADERS)
+    response.raise_for_status()
+    soup = BeautifulSoup(response.content, 'html.parser')
+    
+    # Find the injuries table
+    table = soup.find('table', {'class': 'items'})
+    if not table:
         return None
+        
+    # Extract rows
+    rows = table.find_all('tr')[1:]  # skip header row
+    injuries = []
+    
+    for row in rows:
+        cols = row.find_all('td')
+        if len(cols) >= 5:
+            injury = {
+                'season': cols[0].get_text(strip=True),
+                'injury': cols[1].get_text(strip=True),
+                'from_date': cols[2].get_text(strip=True),
+                'until_date': cols[3].get_text(strip=True),
+                'days': cols[4].get_text(strip=True),
+                'games_missed': cols[5].get_text(strip=True) if len(cols) > 5 else 'N/A'
+            }
+            injuries.append(injury)
+            
+    return injuries, url
 
 def process_injuries(injuries):
     """Process raw injury data into organized DataFrames by injury type"""
@@ -150,39 +145,39 @@ def display_injury_tables(injury_dfs, player_name=""):
                     },
                     use_container_width=True
                 )
-players, player2URL = get_chelsea_players()
-selected_player = st.sidebar.selectbox("Choose a Chelsea player:", players, index=players.index("Reece James"))
+try:
+    players, player2URL = get_chelsea_players()
+    selected_player = st.sidebar.selectbox("Choose a Chelsea player:", players, index=players.index("Reece James"))
 
-st.header(f"{selected_player.title()}'s Injury History:")
+    st.header(f"{selected_player.title()}'s Injury History:")
 
-wikipedia_title = player2URL[selected_player].split("/")[-1]
+    wikipedia_title = player2URL[selected_player].split("/")[-1]
 
-wikidata_id = get_wikidata_entity(wikipedia_title)
-wikidata_dict = get_wikidata_metadata(wikidata_id)
+    wikidata_id = get_wikidata_entity(wikipedia_title)
+    wikidata_dict = get_wikidata_metadata(wikidata_id)
 
-player_id = wikidata_dict['transfermarkt_id']
+    player_id = wikidata_dict['transfermarkt_id']
 
-with st.spinner(f"Fetching {selected_player}'s injury history"):
-    try:
-        injuries, url = get_injury_history(player_id)
-    except:
-        pass
-st.markdown(
-    f"Live from [Transfermarkt]({url}): "
-    "severe injuries (>30 days) in "
-    f"<span style='display: inline-block; width: 12px; height: 12px; background-color: #E2AEAB; margin-right: 4px; vertical-align: middle;'></span>"
-    "and moderate injuries (>7 days) in "
-    f"<span style='display: inline-block; width: 12px; height: 12px; background-color: #F1D7D5; margin-right: 4px; vertical-align: middle;'></span>",
-    unsafe_allow_html=True
-)
-if injuries:
-    injury_dfs = process_injuries(injuries)
-    display_injury_tables(injury_dfs, selected_player)
-else:
-    st.warning(f"No injury data found for {selected_player}")
+    with st.spinner(f"Fetching {selected_player}'s injury history"):
+            injuries, url = get_injury_history(player_id)
+    st.markdown(
+        f"Live from [Transfermarkt]({url}): "
+        "severe injuries (>30 days) in "
+        f"<span style='display: inline-block; width: 12px; height: 12px; background-color: #E2AEAB; margin-right: 4px; vertical-align: middle;'></span>"
+        "and moderate injuries (>7 days) in "
+        f"<span style='display: inline-block; width: 12px; height: 12px; background-color: #F1D7D5; margin-right: 4px; vertical-align: middle;'></span>",
+        unsafe_allow_html=True
+    )
+    if injuries:
+        injury_dfs = process_injuries(injuries)
+        display_injury_tables(injury_dfs, selected_player)
+    else:
+        st.warning(f"No injury data found for {selected_player}")
 
-st.subheader(f"AI Sports Scientist's Opinion: 💻")
+    st.subheader(f"AI Sports Scientist's Opinion: 💻")
 
-df_json = pd.DataFrame(injuries).to_json(orient="records")
+    df_json = pd.DataFrame(injuries).to_json(orient="records")
 
-st.write(get_ai_analysis(df_json, mode="recovery"))
+    st.write(get_ai_analysis(df_json, mode="recovery"))
+except:
+    st.error(f"Error fetching data for {selected_player}")
