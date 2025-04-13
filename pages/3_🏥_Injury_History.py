@@ -163,7 +163,10 @@ wikidata_dict = get_wikidata_metadata(wikidata_id)
 player_id = wikidata_dict['transfermarkt_id']
 
 with st.spinner(f"Fetching {selected_player}'s injury history"):
-    injuries, url = get_injury_history(player_id)
+    try:
+        injuries, url = get_injury_history(player_id)
+    except:
+        pass
 st.markdown(
     f"Live from [Transfermarkt]({url}): "
     "severe injuries (>30 days) in "
