@@ -114,63 +114,66 @@ with st.sidebar:
     players, _ = get_chelsea_players()
     selected_player = st.selectbox("Choose a Chelsea player:", players, index=players.index("Christopher Nkunku"))
 
-results = get_news_results(selected_player)
+try:
+    results = get_news_results(selected_player)
 
-st.header(f"{selected_player}: Latest News (Past 7 Days)")
-n_articles = results["totalResults"]
-st.markdown(f"Found {n_articles} articles - Live news data from [NewsAPI](https://newsapi.org)")
+    st.header(f"{selected_player}: Latest News (Past 7 Days)")
+    n_articles = results["totalResults"]
+    st.markdown(f"Found {n_articles} articles - Live news data from [NewsAPI](https://newsapi.org)")
 
-# Generate word cloud from all content
-all_text = " ".join([art.get('content', '') or art.get('description', '') for art in results['articles']])
-# Remove technical terms/artifacts
-all_text = re.sub(r'\b(chars?|encoding|xml|html)\b', '', all_text, flags=re.IGNORECASE)
-# Remove special characters (optional)
-all_text = re.sub(r'[^\w\s-]', ' ', all_text) 
+    # Generate word cloud from all content
+    all_text = " ".join([art.get('content', '') or art.get('description', '') for art in results['articles']])
+    # Remove technical terms/artifacts
+    all_text = re.sub(r'\b(chars?|encoding|xml|html)\b', '', all_text, flags=re.IGNORECASE)
+    # Remove special characters (optional)
+    all_text = re.sub(r'[^\w\s-]', ' ', all_text) 
 
-generate_wordcloud(all_text)
+    generate_wordcloud(all_text)
 
-st.subheader("AI Sports Journalist's Findings: 💻")
+    st.subheader("AI Sports Journalist's Findings: 💻")
 
-st.write(get_ai_analysis(df_json=None, mode="external_factors", selected_player=selected_player, news=all_text))
+    st.write(get_ai_analysis(df_json=None, mode="external_factors", selected_player=selected_player, news=all_text))
 
-st.subheader("📰 Article List: Color-coded by Sentiment Analysis")
+    st.subheader("📰 Article List: Color-coded by Sentiment Analysis")
 
-for article in results['articles']:
-    source = article['source']['name']
-    title = article['title']    
-    description = article['description']
-    url = article['url']
-    urlToImage = article["urlToImage"]
-    published_at = article['publishedAt']
-    content = article.get('content', '')
-    
-    # Enhanced content extraction
-    full_content = extract_article_content(url, content or description)
-    sentiment, score = analyze_sentiment(full_content)
-    
-    # Format date
-    try:
-        date_obj = datetime.strptime(published_at, "%Y-%m-%dT%H:%M:%SZ")
-        formatted_date = date_obj.strftime("%B %d, %Y %H:%M")
-    except:
-        formatted_date = published_at
-    
-    # Article display
-    with st.container():
-        col1, col2 = st.columns([1, 3])
+    for article in results['articles']:
+        source = article['source']['name']
+        title = article['title']    
+        description = article['description']
+        url = article['url']
+        urlToImage = article["urlToImage"]
+        published_at = article['publishedAt']
+        content = article.get('content', '')
         
-        with col1:
-            if urlToImage:
-                st.image(urlToImage, width=200)
-            else:
-                st.warning("No image available")
+        # Enhanced content extraction
+        full_content = extract_article_content(url, content or description)
+        sentiment, score = analyze_sentiment(full_content)
         
-        with col2:
-            st.markdown(f"### [{title}]({url}) {get_sentiment_badge(sentiment, score)}")
-            st.caption(f"**Source:** {source} | **Published:** {formatted_date}")
+        # Format date
+        try:
+            date_obj = datetime.strptime(published_at, "%Y-%m-%dT%H:%M:%SZ")
+            formatted_date = date_obj.strftime("%B %d, %Y %H:%M")
+        except:
+            formatted_date = published_at
+        
+        # Article display
+        with st.container():
+            col1, col2 = st.columns([1, 3])
             
-            if full_content:
-                with st.expander("Read more"):
-                    st.write(full_content)
-    
-        st.markdown("---")
+            with col1:
+                if urlToImage:
+                    st.image(urlToImage, width=200)
+                else:
+                    st.warning("No image available")
+            
+            with col2:
+                st.markdown(f"### [{title}]({url}) {get_sentiment_badge(sentiment, score)}")
+                st.caption(f"**Source:** {source} | **Published:** {formatted_date}")
+                
+                if full_content:
+                    with st.expander("Read more"):
+                        st.write(full_content)
+        
+            st.markdown("---")
+except:
+    st.error(f"Error fetching data for {selected_player}")
