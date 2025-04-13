@@ -191,23 +191,70 @@ with st.sidebar:
     selected_player = st.selectbox("Choose a Chelsea player:", players, index=players.index("Cole Palmer"))
 
 st.title(f"Player Bio Live from [Wikipedia]({player2URL[selected_player]})")
+try:
+    if selected_player:
+        st.subheader(selected_player)
+        photo_section, player_data = get_biography_and_image(selected_player, player2URL)
+        wikipedia_title = player2URL[selected_player].split("/")[-1]
 
-if selected_player:
-    st.subheader(selected_player)
-    photo_section, player_data = get_biography_and_image(selected_player, player2URL)
-    wikipedia_title = player2URL[selected_player].split("/")[-1]
+        wikidata_id = get_wikidata_entity(wikipedia_title)
+        wikidata_dict = get_wikidata_metadata(wikidata_id)
 
-    wikidata_id = get_wikidata_entity(wikipedia_title)
-    wikidata_dict = get_wikidata_metadata(wikidata_id)
+        col1, col2, col3 = st.columns([1, 2, 1.8])
+        with col1:
+            if photo_section:
+                st.image(photo_section, width=180)
+            else:
+                st.warning("No image available.")
+        with col3:
+            if wikidata_dict["sports_teams_played_for"]:
+                # Create Wikipedia-style layout
+                st.markdown("""
+                <style>
+                .info-title {
+                    background-color: #D3DEEF;
+                    text-align: center;
+                    font-weight: bold;
+                    padding: 5px;
+                }
+                .info-row {
+                    display: flex;
+                    margin-bottom: 5px;
+                }
+                .info-label {
+                    font-weight: bold;
+                    min-width: 120px;
+                }
+                .section-title {
+                    border-bottom: 1px solid #a2a9b1;
+                    font-size: 18px;
+                    font-weight: bold;
+                    margin: 15px 0 10px 0;
+                }
+                </style>
+                """, unsafe_allow_html=True)
+                
+                # Personal Information Section
+                st.markdown('<div class="info-box"><div class="info-title">Playing Career</div>', unsafe_allow_html=True)
+                for row in wikidata_dict["sports_teams_played_for"]:        
+                    st.markdown(f"""
+                    <div class="info-row">
+                        <div>{row.replace("?","now").replace("national","").replace(".","").replace("under-","U").replace("association football team","national team").replace("-"," - ")}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+        with col2:
+            # Remove None values and empty keys
+            clean_data = {k: v for k, v in player_data.items() if v is not None and k != ''}
+            text = re.sub(r"\s*\[\s*\d+\s*\]\s*", "", clean_data['Date of birth'])
+            clean_data['Date of birth'] = re.sub(r"\([^()]*\)", "", text, count=1).strip()
+            text = ", ".join([x.strip() for x in clean_data['Place of birth'].split(",")])
+            clean_data['Place of birth'] = re.sub(r"\[\s*\d+\s*\]", "", text).strip()
+            if "Height" in clean_data:
+                matched = re.search(r"(\d\.\d+)\s?m", clean_data['Height'])
+                clean_data['Height'] = f"{matched.group(1)}m" if matched else None
 
-    col1, col2, col3 = st.columns([1, 2, 1.8])
-    with col1:
-        if photo_section:
-            st.image(photo_section, width=180)
-        else:
-            st.warning("No image available.")
-    with col3:
-        if wikidata_dict["sports_teams_played_for"]:
+            clean_data['Position(s)'] = ", ".join(x.strip() for x in clean_data['Position(s)'].split("[")[0].split(" , "))
+
             # Create Wikipedia-style layout
             st.markdown("""
             <style>
@@ -235,126 +282,81 @@ if selected_player:
             """, unsafe_allow_html=True)
             
             # Personal Information Section
-            st.markdown('<div class="info-box"><div class="info-title">Playing Career</div>', unsafe_allow_html=True)
-            for row in wikidata_dict["sports_teams_played_for"]:        
-                st.markdown(f"""
-                <div class="info-row">
-                    <div>{row.replace("?","now").replace("national","").replace(".","").replace("under-","U").replace("association football team","national team").replace("-"," - ")}</div>
-                </div>
-                """, unsafe_allow_html=True)
-    with col2:
-        # Remove None values and empty keys
-        clean_data = {k: v for k, v in player_data.items() if v is not None and k != ''}
-        text = re.sub(r"\s*\[\s*\d+\s*\]\s*", "", clean_data['Date of birth'])
-        clean_data['Date of birth'] = re.sub(r"\([^()]*\)", "", text, count=1).strip()
-        text = ", ".join([x.strip() for x in clean_data['Place of birth'].split(",")])
-        clean_data['Place of birth'] = re.sub(r"\[\s*\d+\s*\]", "", text).strip()
-        if "Height" in clean_data:
-            matched = re.search(r"(\d\.\d+)\s?m", clean_data['Height'])
-            clean_data['Height'] = f"{matched.group(1)}m" if matched else None
+            st.markdown('<div class="info-box"><div class="info-title">Personal information</div>', unsafe_allow_html=True)
+            
+            personal_info_fields = ['Date of birth', 'Place of birth']
+            for field in personal_info_fields:
+                if field in clean_data:
+                    st.markdown(f"""
+                    <div class="info-row">
+                        <div class="info-label">{field}</div>
+                        <div>{clean_data[field]}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
+            related_wikidata_field = ['country_of_citizenship', 'native_language']
+            for key in ["native_language","languages_spoken"]:
+                if isinstance(wikidata_dict[key], str):
+                    wikidata_dict[key] = [wikidata_dict[key]]
 
-        clean_data['Position(s)'] = ", ".join(x.strip() for x in clean_data['Position(s)'].split("[")[0].split(" , "))
+            try:
+                langs = list(OrderedDict.fromkeys(wikidata_dict["native_language"] + wikidata_dict["languages_spoken"]))
+                if len(langs) > 1:
+                    wikidata_dict["native_language"] = ", ".join(langs)
+                else:
+                    wikidata_dict["native_language"] = langs[0]
+            except:
+                langs = []
 
-        # Create Wikipedia-style layout
-        st.markdown("""
-        <style>
-        .info-title {
-            background-color: #D3DEEF;
-            text-align: center;
-            font-weight: bold;
-            padding: 5px;
-        }
-        .info-row {
-            display: flex;
-            margin-bottom: 5px;
-        }
-        .info-label {
-            font-weight: bold;
-            min-width: 120px;
-        }
-        .section-title {
-            border-bottom: 1px solid #a2a9b1;
-            font-size: 18px;
-            font-weight: bold;
-            margin: 15px 0 10px 0;
-        }
-        </style>
-        """, unsafe_allow_html=True)
-        
-        # Personal Information Section
-        st.markdown('<div class="info-box"><div class="info-title">Personal information</div>', unsafe_allow_html=True)
-        
-        personal_info_fields = ['Date of birth', 'Place of birth']
-        for field in personal_info_fields:
-            if field in clean_data:
-                st.markdown(f"""
-                <div class="info-row">
-                    <div class="info-label">{field}</div>
-                    <div>{clean_data[field]}</div>
-                </div>
-                """, unsafe_allow_html=True)
-        
-        related_wikidata_field = ['country_of_citizenship', 'native_language']
-        for key in ["native_language","languages_spoken"]:
-            if isinstance(wikidata_dict[key], str):
-                wikidata_dict[key] = [wikidata_dict[key]]
-
-        try:
-            langs = list(OrderedDict.fromkeys(wikidata_dict["native_language"] + wikidata_dict["languages_spoken"]))
-            if len(langs) > 1:
-                wikidata_dict["native_language"] = ", ".join(langs)
-            else:
-                wikidata_dict["native_language"] = langs[0]
-        except:
-            langs = []
-
-        wikidata_mapping = {"country_of_citizenship": "Country", 'native_language': "Language"}
-        for field in related_wikidata_field:
-            value = wikidata_dict[field]
-            if value:
-                st.markdown(f"""
-                <div class="info-row">
-                    <div class="info-label">{wikidata_mapping[field]}</div>
-                    <div>{value}</div>
-                </div>
-                """, unsafe_allow_html=True)
-        
-        personal_info_fields = ['Height', 'Position(s)']
-        for field in personal_info_fields:
-            if field in clean_data:
-                st.markdown(f"""
-                <div class="info-row">
-                    <div class="info-label">{field}</div>
-                    <div>{clean_data[field]}</div>
-                </div>
-                """, unsafe_allow_html=True)
+            wikidata_mapping = {"country_of_citizenship": "Country", 'native_language': "Language"}
+            for field in related_wikidata_field:
+                value = wikidata_dict[field]
+                if value:
+                    st.markdown(f"""
+                    <div class="info-row">
+                        <div class="info-label">{wikidata_mapping[field]}</div>
+                        <div>{value}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
+            personal_info_fields = ['Height', 'Position(s)']
+            for field in personal_info_fields:
+                if field in clean_data:
+                    st.markdown(f"""
+                    <div class="info-row">
+                        <div class="info-label">{field}</div>
+                        <div>{clean_data[field]}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
 
-        st.markdown('</div>', unsafe_allow_html=True)
-        
-        # Team Information Section
-        st.markdown('<div class="info-box"><div class="info-title">Team information</div>', unsafe_allow_html=True)
-        
-        team_info_fields = ['Current team', 'Number']
-        for field in team_info_fields:
-            if field in clean_data:
-                st.markdown(f"""
-                <div class="info-row">
-                    <div class="info-label">{field}</div>
-                    <div>{clean_data[field]}</div>
-                </div>
-                """, unsafe_allow_html=True)
-        
-        st.markdown('</div>', unsafe_allow_html=True)        
+            st.markdown('</div>', unsafe_allow_html=True)
+            
+            # Team Information Section
+            st.markdown('<div class="info-box"><div class="info-title">Team information</div>', unsafe_allow_html=True)
+            
+            team_info_fields = ['Current team', 'Number']
+            for field in team_info_fields:
+                if field in clean_data:
+                    st.markdown(f"""
+                    <div class="info-row">
+                        <div class="info-label">{field}</div>
+                        <div>{clean_data[field]}</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+            
+            st.markdown('</div>', unsafe_allow_html=True)        
 
-    # Wikipedia API setup
-    wiki_wiki = wikipediaapi.Wikipedia(
-        language='en',
-        user_agent='ChelseaFCBioViewer/1.0 (contact: "your_email@example.com)'
-    )
-    page = wiki_wiki.page(wikipedia_title)
-    formatted_summary = page.summary.replace('\n', '  \n\n')
-    if formatted_summary:
-        st.markdown("## Summary:")
-        st.markdown(formatted_summary)
-    display_sections(page.sections)
+        # Wikipedia API setup
+        wiki_wiki = wikipediaapi.Wikipedia(
+            language='en',
+            user_agent='ChelseaFCBioViewer/1.0 (contact: "your_email@example.com)'
+        )
+        page = wiki_wiki.page(wikipedia_title)
+        formatted_summary = page.summary.replace('\n', '  \n\n')
+        if formatted_summary:
+            st.markdown("## Summary:")
+            st.markdown(formatted_summary)
+        display_sections(page.sections)
+except:
+    st.error(f"Error fetching data for {selected_player}")
