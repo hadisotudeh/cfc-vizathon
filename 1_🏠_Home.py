@@ -19,23 +19,28 @@ with col2:
     image = Image.open("static/logo.jpg")
     st.image(image, width=100)
 # Custom card function with D3DEEF background
-def create_card(icon, title, content, page):
-    with st.container(border=False):
-        container = st.container()
-        with container:
-            st.markdown(
-                f"""
-                <a href="{page}" style="text-decoration: none; color: inherit;">
-                <div style="border: 0.5px solid black; border-radius: 10px; padding: 15px; height: 240px;">
-                    <h3>{icon} {title}</h3>
-                    <p>{content}</p>
-                    <p style="color: #3498db"> Explore </p>
-                </div>
-                </a>
-                """,
-                unsafe_allow_html=True
-            )
 
+# Custom card function
+def create_card(icon, title, content, page):
+    # Use markdown to create a clickable card
+    card_html = f"""
+    <a href="{page}" target="_self" style="text-decoration: none; color: inherit;">
+        <div style="
+            background: white;
+            border: 0.5px solid black;
+            border-radius: 10px;
+            padding: 15px;
+            height: 240px;
+            margin-bottom: 20px;
+            text-align: left;
+        ">
+            <h3>{icon} {title}</h3>
+            <p>{content}</p>
+            <p style="color: #3498db">Explore</p>
+        </div>
+    </a>
+    """
+    st.markdown(card_html, unsafe_allow_html=True)
 # Create 3 columns with equal spacing
 col1, col2, col3 = st.columns(3)
 

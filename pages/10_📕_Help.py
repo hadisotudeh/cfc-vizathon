@@ -15,13 +15,13 @@ st.markdown(
     """
     This prototype provides **performance coaches** and **players** with an overview of key performance data across the following areas:
 
-    1. **Biography** – Player identity: photo, nationality, position, age, team, and league.  
+    1. **Biography** – Player identity data such as photo, nationality, position, age, team, and league.  
     2. **Load Demand** – Match and training load based on GPS KPIs.
     3. **Physical Development** – Test results, development plans, strength & conditioning logs, and priority areas.  
     4. **Recovery** – Insights on sleep, wellness, nutrition, and behavioural adherence.  
-    5. **Injury History** – Recent injuries.  
+    5. **Injury History** – Recent injuries categorized per type and color-coded.
     6. **Individual Priority** – Player-specific focus areas and development needs.  
-    7. **External Factors** – Contextual influences such as environment, team dynamics, and motivation.  
+    7. **External Factors** – Contextual influences such as environment, team dynamics, and motivation, assessed through media coverage and [social media connections](https://www.linkedin.com/posts/hadisotudeh_football-information-physical-activity-7313923204660576259-NL5t).
     8. **Case Explorer** – Browse and compare tabular performance data.  
     9. **Help** – Reference Chelsea FC's physical performance data sources.
     

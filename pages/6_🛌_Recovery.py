@@ -71,9 +71,8 @@ else:
         rows=n_metrics, cols=1, shared_xaxes=True, vertical_spacing=0.03
     )
 
-
 st.subheader(f"{category.title()} composite score Days:")
-kpi_1, kpi_2, kpi_3 = st.columns(3)
+kpi_1, kpi_2, kpi_3, kpi_4, kpi_5 = st.columns(5)
 
 if category != "total":
     kpi_df = selected_df[selected_df.metric.str.contains("composite")]
@@ -87,18 +86,41 @@ y_max = kpi_df["value"].max()
 low_threshold = y_min + (y_max - y_min) * 0.3  # Bottom 30% is red
 high_threshold = y_min + (y_max - y_min) * 0.7  # Top 30% is green
 
-kpi_1.metric(
+# Set reference date to March 12, 2025
+reference_date = pd.Timestamp('2025-03-12')
+
+print(kpi_df)
+
+last_score = kpi_df["value"].iloc[-1]
+kpi_1.metric(label = "Latest Score",
+             value=round(last_score, 2),
+             border=True,
+)
+
+# Average in the last week (from March 5-12, 2025)
+last_week_avg = kpi_df[kpi_df['sessionDate'] >= (reference_date - pd.Timedelta(days=7))]['value'].mean()
+kpi_2.metric(
+    label="Last Week Average",
+    value=round(last_week_avg, 2),
+    border=True,
+)
+
+# Average in the last 30 days
+last_month_avg = kpi_df[kpi_df['sessionDate'] >= (reference_date - pd.Timedelta(days=30))]['value'].mean()
+kpi_3.metric(
+    label="Last Month Average",
+    value=round(last_month_avg, 2),
+    border=True,
+)
+
+kpi_4.metric(
+    "# :red-badge[Red Days]", kpi_df[kpi_df.value < low_threshold].size, border=True
+)
+
+kpi_5.metric(
     "# :green-badge[Green Days]",
     kpi_df[kpi_df.value > high_threshold].size,
     border=True,
-)
-kpi_2.metric(
-    "# White Days",
-    kpi_df[(kpi_df.value <= high_threshold) & (kpi_df.value >= low_threshold)].size,
-    border=True,
-)
-kpi_3.metric(
-    "# :red-badge[Red Days]", kpi_df[kpi_df.value < low_threshold].size, border=True
 )
 
 colors = ["#575757", "#575757"]

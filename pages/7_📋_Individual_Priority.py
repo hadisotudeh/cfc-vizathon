@@ -93,11 +93,11 @@ player_id = st.sidebar.selectbox(
 st.title("📋 Individual Priority List")
 
 # Gantt Chart
-st.subheader("Gantt Chart:")
 st.plotly_chart(update_gantt_chart(), use_container_width=True)
 
 # Tables with data editors
-st.subheader("Table:")
+st.subheader("List:")
+st.markdown("Add, edit, or remove goals to update the timeline.")
 
 # Split data into On Track and Achieved
 on_track_df = st.session_state.individual_priority_df[
@@ -127,7 +127,7 @@ achieved_edited_df = st.data_editor(
 )
 
 # Update button to sync changes
-if st.button("Update Gantt Chart"):
+if st.button("Update Timeline"):
     # Combine edited data
     new_on_track = on_track_edited_df.copy()
     new_on_track["Tracking"] = "On Track"
